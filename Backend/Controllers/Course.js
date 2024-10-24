@@ -15,8 +15,9 @@ exports.createCourse = async (req, res) => {
             price,
             category,
             tag,
-            status,
-            instructions } = req.body;
+            instructions
+        } = req.body;
+        let { status } = req.body;
 
         const thumbnail = req.files.thumbnailImage;
 
@@ -67,8 +68,8 @@ exports.createCourse = async (req, res) => {
             thumbnail: thumbnailImage.secure_url,
             tag,
             instructions,
-            status
         })
+
 
 
         // Add new course in Instructor's array
@@ -76,7 +77,7 @@ exports.createCourse = async (req, res) => {
             { _id: isInstructor._id },
             {
                 $push: {
-                    course: newCourse._id
+                    courses: newCourse._id
                 }
             },
             { new: true }
@@ -97,10 +98,12 @@ exports.createCourse = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: `New Course created successfully`,
-            data: newCourse
+            data: newCourse,
         })
 
     } catch (err) {
+        console.log(`Error occured at the time of creating course : ${err}`);
+
         return res.status(500).json({
             success: true,
             message: err.message
@@ -154,7 +157,7 @@ exports.getCourseDetails = async (req, res) => {
             {
                 path: "courseContent",
                 populate: {
-                    path: "SubSection"
+                    path: "subSection"
                 }
             },
         ).populate("ratingAndReviews")

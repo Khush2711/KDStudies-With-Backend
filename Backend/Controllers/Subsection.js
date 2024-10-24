@@ -7,7 +7,7 @@ exports.createSubSection = async (req, res) => {
     try {
         const { sectionId, title, timeDuration, description } = req.body;
 
-        const video = req.file.videoFile;
+        const video = req.files?.videoFile;
 
         if (!sectionId || !title || !timeDuration || !description || !video) {
             return res.status(400).json({
@@ -16,14 +16,16 @@ exports.createSubSection = async (req, res) => {
             })
         }
 
+        
+
         const uploadVideoDetails = await uploadImageToCloudinary(video, process.env.FOLDER_NAME);
 
-        const subSection = await SubSection.create({ title, timeDuration, description, videoUrl: video.secure_url })
+        const newSubSection = await SubSection.create({ title, timeDuration, description, videoUrl: uploadVideoDetails.secure_url })
 
         const updatedSection = await Section.findByIdAndUpdate(sectionId,
             {
                 $push: {
-                    subSection: subSection._id
+                    subSection: newSubSection._id
                 }
             },
             { new: true }
@@ -36,6 +38,7 @@ exports.createSubSection = async (req, res) => {
         })
 
     } catch (error) {
+        console.log(`Error raise at time of creating subsection : ${error}`);
         return res.status(500).json({
             success: false,
             message: "Internal Error Message",
@@ -45,13 +48,14 @@ exports.createSubSection = async (req, res) => {
 
 exports.updateSubSection = async (req, res) => {
     try {
-        const { sectionId, title, description } = req.body
-        const subSection = await SubSection.findById(sectionId)
+        const { subSectionId, title, description, timeDuration, videoUrl } = req.body
+        const subSection = await SubSection.findOne({ _id: subSectionId })
 
         if (!subSection) {
             return res.status(404).json({
                 success: false,
                 message: "SubSection not found",
+                subSection
             })
         }
 
@@ -72,11 +76,19 @@ exports.updateSubSection = async (req, res) => {
             subSection.timeDuration = `${uploadDetails.duration}`
         }
 
+        if (timeDuration !== undefined) {
+            subSection.timeDuration = timeDuration;
+        }
+
+        if (videoUrl !== undefined) {
+            subSection.videoUrl = videoUrl;
+        }
+
         await subSection.save()
 
         return res.json({
             success: true,
-            message: "Section updated successfully",
+            message: "SubSection updated successfully",
         })
     } catch (error) {
         console.error(error)

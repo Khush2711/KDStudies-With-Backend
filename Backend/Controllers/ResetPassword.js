@@ -2,7 +2,7 @@
 const User = require("../Models/User");
 const mailSender = require("../Utilis/mailSender");
 const bcrypt = require("bcrypt");
-
+const crypto = require("crypto");
 
 exports.resetPasswordToken = async (req, res) => {
     try {
@@ -11,7 +11,7 @@ exports.resetPasswordToken = async (req, res) => {
         if (!email) {
             return res.status(401).json({
                 success: false,
-                message: "All fileds are required"
+                message: "All fileds are required",
             })
         }
 
@@ -86,7 +86,7 @@ exports.resetPassword = async (req, res) => {
             })
         }
 
-        const userDetails = await User.find({ token });
+        const userDetails = await User.findOne({ token });
 
         if (!userDetails) {
             return res.status(403).json({
@@ -102,6 +102,9 @@ exports.resetPassword = async (req, res) => {
             })
         }
 
+        console.log(userDetails.resetPasswordExpires );
+        
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         await User.findOneAndUpdate(
@@ -109,7 +112,7 @@ exports.resetPassword = async (req, res) => {
             { password: hashedPassword },
             { new: true }
         )
-
+        
         return res.status(200).json({
             success: true,
             message: `Password reset successful`

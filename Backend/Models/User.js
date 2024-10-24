@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const Course = require("./Course");
+
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -53,5 +55,24 @@ const userSchema = new mongoose.Schema({
         ref: "CourseProgress"
     }]
 });
+
+userSchema.pre('findOneAndDelete', async function (next) {
+    try {
+      const userId = this.id;
+      console.log(`Pre hook user ID : ${userId}`);
+
+      const removeUser = await Course.updateMany(
+        { studentsEnrolled: userId },
+        { $pull: { studentsEnrolled: userId } }
+      );
+
+      console.log(`Pre hook log : ${removeUser}`);
+      
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
 
 module.exports = mongoose.model("User", userSchema);

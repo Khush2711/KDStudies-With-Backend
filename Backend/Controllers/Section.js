@@ -13,7 +13,7 @@ exports.createSection = async (req, res) => {
             })
         }
 
-        const newSection = await Section.create({ sectionName });
+        const newSection = await Section.create({ sectionName: sectionName });
 
         const updateCourse = await Course.findByIdAndUpdate(
             courseId,
@@ -29,7 +29,10 @@ exports.createSection = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Section created successfully",
-            updateCourse
+            data:{
+                updateCourse,
+                newSection
+            }
         })
 
     } catch (error) {

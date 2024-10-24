@@ -28,7 +28,7 @@ exports.sendOTP = async (req, res) => {
 
         const isUserExist = await User.findOne({ email });
 
-        console.log(`is user exist with this email : ${isUserExist}`);
+        // console.log(`is user exist with this email : ${isUserExist}`);
 
         if (!isValidEmail(email)) {
             throw new Error('Invalid email address format');
@@ -125,7 +125,7 @@ exports.signup = async (req, res) => {
         
 
 
-        let recentOtp = await OTPModel.find({ otp }).sort({ createAt: -1 }).limit(1);
+        let recentOtp = await OTPModel.find({ email }).sort({ createAt: -1 }).limit(1);
         console.log(`Recent Otp : ${recentOtp}`);
 
         if (recentOtp.length === 0) {
@@ -193,7 +193,7 @@ exports.login = async (req, res) => {
             })
         }
 
-        const existingUser = await User.findOne({ email }).populate("additionalDetails");
+        const existingUser = await User.findOne({ email }).populate("additionDetails").exec();
 
         if (!existingUser) {
             return res.status(401).json({
@@ -238,6 +238,8 @@ exports.login = async (req, res) => {
 
 
     } catch (error) {
+        console.log(error);
+        
         return res.status(500).json({
             success: false,
             message: `Login Failure, please try again.`

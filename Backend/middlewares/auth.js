@@ -6,7 +6,7 @@ require("dotenv").config();
 exports.auth = async (req, res, next) => {
     try {
         // Extract Token From cookie || body || header
-        const token = req.cookie.token || req.body.token || req.header("Authorisation").replace("Bearer ", "");
+        const token = req.cookies.token || req.body.token || req.header("Authorisation").replace("Bearer ", "");
 
         if (!token) {
             return res.status(401).json({
@@ -28,6 +28,8 @@ exports.auth = async (req, res, next) => {
         next();
 
     } catch (error) {
+        console.log(error);
+        
         return res.status(401).json({
             success: false,
             message: `something went wrong while validating the token`
@@ -37,7 +39,7 @@ exports.auth = async (req, res, next) => {
 
 
 // student
-exports.isStudent = async (req, res) => {
+exports.isStudent = async (req, res, next) => {
     try {
         if (req.user.role !== 'Student') {
             return res.status(401).json({
@@ -56,7 +58,7 @@ exports.isStudent = async (req, res) => {
 
 
 // instructor
-exports.isInstructor = async (req, res) => {
+exports.isInstructor = async (req, res, next) => {
     try {
         if (req.user.role !== 'Instructor') {
             return res.status(401).json({
@@ -74,7 +76,7 @@ exports.isInstructor = async (req, res) => {
 }
 
 // is admin
-exports.isAdmin = async (req, res) => {
+exports.isAdmin = async (req, res, next) => {
     try {
         if (req.user.role !== 'Admin') {
             return res.status(401).json({
@@ -84,9 +86,11 @@ exports.isAdmin = async (req, res) => {
         }
         next();
     } catch (err) {
+        console.log(`Error in admin middleware ${err}`);
+        
         return res.status(500).json({
             success: false,
-            message: `User role is not verified, please try again`
+            message: `User role is not verified, please try again`,
         })
     }
 }

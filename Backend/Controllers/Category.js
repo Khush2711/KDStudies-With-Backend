@@ -11,7 +11,7 @@ exports.createCategory = async (req, res) => {
             })
         }
 
-        const CategoryPresent = await Category.find({ name, description });
+        const CategoryPresent = await Category.findOne({ name, description });
 
         if (CategoryPresent) {
             return res.status(403).json({
@@ -25,7 +25,7 @@ exports.createCategory = async (req, res) => {
             description
         })
 
-        console.log(`${CategoryDetails}`);
+        // console.log(`${CategoryDetails}`);
 
         return res.status(200).json({
             success: true,
