@@ -96,20 +96,23 @@ exports.signup = async (req, res) => {
             otp
         } = req.body;
 
+        console.log("request body",req.body);
 
         if (!firstName || !lastName || !email || !password || !confirmPassword || !accountType || !otp) {
+            console.log(firstName,
+                lastName,
+                email,
+                password,
+                confirmPassword,
+                accountType,
+                contactNumber,
+                otp)
             return res.status(403).json({
                 success: false,
                 message: `All fileds are required`
             })
         }
 
-        if (password !== confirmPassword) {
-            return res.status(400).json({
-                success: false,
-                message: `password and confirmPassword not match, please try again`
-            })
-        }
 
         const isUserExist = await User.findOne({ email });
 
@@ -166,6 +169,20 @@ exports.signup = async (req, res) => {
             approved
         })
 
+
+        const payload = {
+            email: user.email,
+            id: user._id,
+            role: user.accountType
+        }
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: "12h"
+        })
+
+        user.password = null;
+        user.token = token;
+
         return res.status(200).json({
             success: true,
             message: 'User is registered successfully',
@@ -218,17 +235,27 @@ exports.login = async (req, res) => {
             existingUser.token = token;
             existingUser.password = null;
 
+            // let option = {
+            //     expiresIn: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            //     httpOnly: true
+            // }
+
             let option = {
-                expiresIn: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-                httpOnly: true
-            }
+                expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // expires in 3 days
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production", // set to true in production for secure cookies
+                sameSite: "strict", // helps prevent CSRF attacks
+            };
+        
+            const { password, ...userWithoutPassword } = existingUser.toObject(); // Exclude password
+
 
             return res.cookie("token", token, option).status(200).json({
                 success: true,
-                token,
-                existingUser,
-                message: `Logged in`
-            })
+                user: userWithoutPassword,  // Send the user object without the password and token
+                message: "Logged in",
+            });
+            
         }
 
         return res.status(401).json({
@@ -246,6 +273,20 @@ exports.login = async (req, res) => {
         })
     }
 }
+
+// logout
+exports.logout = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // Secure cookie in production
+        sameSite: "strict", // Prevents CSRF
+    });
+    return res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+    });
+};
+
 
 
 // change password
