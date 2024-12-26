@@ -331,10 +331,15 @@ exports.changePassword = async (req, res) => {
 		try {
 			const emailResponse = await mailSender(
 				updatedUserDetails.email,
-				passwordUpdated(
-					updatedUserDetails.email,
-					`Password updated successfully for ${updatedUserDetails.firstName} ${updatedUserDetails.lastName}`
-				)
+                "Your Password Has Been Successfully Changed",
+                `<p>Dear ${updatedUserDetails.firstName},</p>
+                    <p>We wanted to let you know that your account password has been successfully updated.</p>
+                    <p>If you made this change, no further action is needed.</p>
+                    <p>If you did not request a password change, please take appropriate action to secure your account.</p>
+                    <p>Thank you for keeping your account secure.</p>
+                <p>Best regards,</p>
+                <p>KD Studies</p>`,
+
 			);
 			console.log("Email sent successfully:", emailResponse.response);
 		} catch (error) {
