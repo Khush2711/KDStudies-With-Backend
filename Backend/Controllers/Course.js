@@ -19,10 +19,10 @@ exports.createCourse = async (req, res) => {
         } = req.body;
         let { status } = req.body;
 
-        const thumbnail = req.files.thumbnailImage;
+        const thumbnail = req?.files?.thumbnailImage;
 
         // Check if any of the required fields are missing
-        if (!courseName || !courseDescription || !whatYouWillLearn || !price || !category || !thumbnail || !tag) {
+        if (!courseName || !courseDescription || !whatYouWillLearn || !price || !category || !thumbnail || !tag ) {
             return res.status(403).json({
                 success: false,
                 message: `All fileds are required`

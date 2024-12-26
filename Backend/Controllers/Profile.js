@@ -50,44 +50,48 @@ exports.updateProfile = async (req, res) => {
   }
 }
 
+const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Types; // Import ObjectId from mongoose
+
 exports.deleteAccount = async (req, res) => {
   try {
     const id = req.user.id;
+    console.log(id);
 
     const user = await User.findById(id);
 
     if (!user) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: "User not found"
-      })
+      });
     }
 
     await Course.updateMany(
       { studentsEnrolled: ObjectId(id) },
       { $pull: { studentsEnrolled: ObjectId(id) } }
-    )
+    );
 
     await Profile.findByIdAndDelete({ _id: user.additionDetails });
 
-    // TODO : Add business logic for task scheduling - crone job
+    // TODO : Add business logic for task scheduling - cron job
     await User.findByIdAndDelete({ _id: id });
-
 
     return res.status(200).json({
       success: true,
-      message: "Account Delete Successfully"
-    })
+      message: "Account Deleted Successfully"
+    });
 
   } catch (error) {
-    console.log(`Error occured while deleteting account :${error}`);
-    
+    console.log(`Error occurred while deleting account: ${error}`);
+
     return res.status(500).json({
       success: false,
       message: error.message
-    })
+    });
   }
-}
+};
+
 
 exports.getAllUsers = async (req, res) => {
 
